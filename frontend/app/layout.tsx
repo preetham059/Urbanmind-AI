@@ -35,6 +35,9 @@ export default function RootLayout({
           <Link href="/chat" className="text-gray-400 hover:text-white text-sm transition">
   Ask AI
 </Link>
+<Link href="/map" className="text-gray-400 hover:text-white text-sm transition">
+  City Map
+</Link>
         </nav>
         {children}
       </body>

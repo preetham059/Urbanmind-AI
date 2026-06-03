@@ -8,6 +8,7 @@ from app.api.complaints import router as complaints_router
 from app.api.detect import router as detect_router
 from app.api.traffic import router as traffic_router
 from app.api.chat import router as chat_router
+from app.api.clusters import router as clusters_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -29,6 +30,7 @@ app.include_router(complaints_router)
 app.include_router(detect_router)
 app.include_router(traffic_router)
 app.include_router(chat_router)
+app.include_router(clusters_router)
 
 @app.get("/")
 def root():

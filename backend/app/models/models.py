@@ -1,6 +1,5 @@
 from sqlalchemy import Column, String, Float, DateTime, Text, Enum
 from sqlalchemy.dialects.postgresql import UUID
-from geoalchemy2 import Geometry
 import uuid
 import enum
 from datetime import datetime
@@ -22,10 +21,11 @@ class Pothole(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     image_url = Column(String, nullable=True)
-    severity_score = Column(Float, nullable=False)  # 0.0 to 1.0
+    severity_score = Column(Float, nullable=False)
     severity_level = Column(Enum(SeverityLevel), nullable=False)
-    bbox_json = Column(Text, nullable=True)          # bounding box from YOLO
-    location = Column(Geometry("POINT", srid=4326), nullable=True)
+    bbox_json = Column(Text, nullable=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     repair_priority = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -33,9 +33,8 @@ class Complaint(Base):
     __tablename__ = "complaints"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    category = Column(String, nullable=False)        # pothole, garbage, streetlight etc
+    category = Column(String, nullable=False)
     description = Column(Text, nullable=False)
-    location = Column(Geometry("POINT", srid=4326), nullable=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     image_url = Column(String, nullable=True)

@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import dynamic from 'next/dynamic'
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 const MapComponent = dynamic(() => import('@/components/maps/CityMap'), {
   ssr: false,
   loading: () => (
@@ -26,8 +28,8 @@ export default function MapPage() {
     const load = async () => {
       try {
         const [c, comp] = await Promise.all([
-          axios.get('http://localhost:8000/api/clusters/potholes'),
-          axios.get('http://localhost:8000/api/clusters/complaints'),
+          axios.get(`${API}/api/clusters/potholes`),
+          axios.get(`${API}/api/clusters/complaints`),
         ])
         setClusters(c.data)
         setComplaints(comp.data)
@@ -46,7 +48,6 @@ export default function MapPage() {
         <p className="text-gray-400 text-sm">Live pothole clusters, complaint hotspots and damage corridors</p>
       </div>
 
-      {/* Layer Controls */}
       <div className="px-6 pb-4 flex gap-4 flex-wrap">
         {[
           { key: 'clusters', label: 'DBSCAN Clusters', color: 'bg-orange-500' },
@@ -55,20 +56,24 @@ export default function MapPage() {
         ].map(layer => (
           <button
             key={layer.key}
-            onClick={() => setActiveLayer(prev => ({ ...prev, [layer.key]: !prev[layer.key as keyof typeof prev] }))}
+            onClick={() => setActiveLayer(prev => ({
+              ...prev,
+              [layer.key]: !prev[layer.key as keyof typeof prev]
+            }))}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition ${
               activeLayer[layer.key as keyof typeof activeLayer]
                 ? 'bg-gray-700 text-white'
                 : 'bg-gray-900 text-gray-500'
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${activeLayer[layer.key as keyof typeof activeLayer] ? layer.color : 'bg-gray-600'}`} />
+            <span className={`w-2 h-2 rounded-full ${
+              activeLayer[layer.key as keyof typeof activeLayer] ? layer.color : 'bg-gray-600'
+            }`} />
             {layer.label}
           </button>
         ))}
       </div>
 
-      {/* Stats Bar */}
       {clusters && (
         <div className="px-6 pb-4 flex gap-4 flex-wrap">
           <div className="bg-gray-800 rounded-xl px-4 py-2 text-center">
@@ -88,7 +93,6 @@ export default function MapPage() {
         </div>
       )}
 
-      {/* Map */}
       <div className="px-6 pb-6" style={{ height: '500px' }}>
         <div className="w-full h-full rounded-2xl overflow-hidden">
           {loading ? (
@@ -105,7 +109,6 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Cluster List */}
       {clusters && clusters.clusters?.length > 0 && (
         <div className="px-6 pb-8">
           <h2 className="text-lg font-semibold mb-3">Damage Corridors Detected</h2>
@@ -113,10 +116,8 @@ export default function MapPage() {
             {clusters.clusters.map((c: any) => (
               <div key={c.cluster_id} className="bg-gray-800 rounded-xl p-4">
                 <div className="flex justify-between items-start mb-2">
-                  <span
-                    className="text-xs font-bold px-2 py-1 rounded-full"
-                    style={{ background: c.color + '33', color: c.color }}
-                  >
+                  <span className="text-xs font-bold px-2 py-1 rounded-full"
+                    style={{ background: c.color + '33', color: c.color }}>
                     {c.severity.toUpperCase()}
                   </span>
                   <span className="text-gray-500 text-xs">{c.point_count} potholes</span>

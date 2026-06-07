@@ -4,6 +4,8 @@ import axios from 'axios'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import Link from 'next/link'
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 export default function Dashboard() {
   const [stats, setStats] = useState({
     totalComplaints: 0,
@@ -19,9 +21,9 @@ export default function Dashboard() {
     const load = async () => {
       try {
         const [health, comp, poth] = await Promise.all([
-          axios.get('http://localhost:8000/health'),
-          axios.get('http://localhost:8000/api/complaints/'),
-          axios.get('http://localhost:8000/api/detect/history'),
+          axios.get(`${API}/health`),
+          axios.get(`${API}/api/complaints/`),
+          axios.get(`${API}/api/detect/history`),
         ])
         setDbStatus(health.data.database)
         setComplaints(comp.data)
@@ -39,7 +41,6 @@ export default function Dashboard() {
     load()
   }, [])
 
-  // Chart data — complaints by category
   const categoryCount: Record<string, number> = {}
   complaints.forEach((c: any) => {
     categoryCount[c.category] = (categoryCount[c.category] || 0) + 1
@@ -49,7 +50,6 @@ export default function Dashboard() {
     count,
   }))
 
-  // Severity distribution
   const severityCount: Record<string, number> = {}
   potholes.forEach((p: any) => {
     severityCount[p.severity_level] = (severityCount[p.severity_level] || 0) + 1
@@ -75,7 +75,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Total Complaints', value: stats.totalComplaints, color: 'text-blue-400', icon: '📋' },
@@ -91,7 +90,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-gray-800 rounded-2xl p-6">
           <h3 className="text-sm font-semibold text-gray-400 mb-4">COMPLAINTS BY CATEGORY</h3>
@@ -103,9 +101,7 @@ export default function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="category" stroke="#9ca3af" tick={{ fontSize: 11 }} />
                 <YAxis stroke="#9ca3af" tick={{ fontSize: 11 }} />
-                <Tooltip
-                  contentStyle={{ background: '#1f2937', border: 'none', borderRadius: 8 }}
-                />
+                <Tooltip contentStyle={{ background: '#1f2937', border: 'none', borderRadius: 8 }} />
                 <Bar dataKey="count" fill="#60a5fa" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -122,9 +118,7 @@ export default function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="level" stroke="#9ca3af" tick={{ fontSize: 11 }} />
                 <YAxis stroke="#9ca3af" tick={{ fontSize: 11 }} />
-                <Tooltip
-                  contentStyle={{ background: '#1f2937', border: 'none', borderRadius: 8 }}
-                />
+                <Tooltip contentStyle={{ background: '#1f2937', border: 'none', borderRadius: 8 }} />
                 <Bar dataKey="count" fill="#a78bfa" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -132,7 +126,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {[
           { href: '/detect', label: 'Detect Potholes', desc: 'Upload road image for AI analysis', icon: '🕳️', color: 'bg-purple-900/30 border border-purple-700' },

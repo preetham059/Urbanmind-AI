@@ -1,6 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { submitComplaint, getComplaints } from '@/lib/api'
+import axios from 'axios'
+
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 const CATEGORIES = ['pothole', 'garbage', 'streetlight', 'water_leakage', 'traffic']
 
@@ -17,8 +19,8 @@ export default function ComplaintsPage() {
 
   const fetchComplaints = async () => {
     try {
-      const data = await getComplaints()
-      setComplaints(data)
+      const data = await axios.get(`${API}/api/complaints/`)
+      setComplaints(data.data)
     } catch (e) {
       console.error(e)
     }
@@ -32,7 +34,7 @@ export default function ComplaintsPage() {
     if (!form.description) return
     setLoading(true)
     try {
-      await submitComplaint({
+      await axios.post(`${API}/api/complaints/`, {
         ...form,
         latitude: form.latitude ? parseFloat(form.latitude) : null,
         longitude: form.longitude ? parseFloat(form.longitude) : null,
@@ -47,7 +49,7 @@ export default function ComplaintsPage() {
     setLoading(false)
   }
 
-  const statusColor: any = {
+  const statusColor: Record<string, string> = {
     pending: 'text-yellow-400',
     in_progress: 'text-blue-400',
     resolved: 'text-green-400',
@@ -58,7 +60,6 @@ export default function ComplaintsPage() {
       <h1 className="text-3xl font-bold text-blue-400 mb-2">Complaint Portal</h1>
       <p className="text-gray-400 mb-8">Report infrastructure issues in your area</p>
 
-      {/* FORM */}
       <div className="bg-gray-800 rounded-2xl p-6 mb-10 max-w-xl">
         <h2 className="text-lg font-semibold mb-4">Submit a Complaint</h2>
 
@@ -115,19 +116,14 @@ export default function ComplaintsPage() {
         </button>
 
         {success && (
-          <p className="text-green-400 text-sm mt-3 text-center">
-            ✅ Complaint submitted successfully!
-          </p>
+          <p className="text-green-400 text-sm mt-3 text-center">✅ Complaint submitted successfully!</p>
         )}
       </div>
 
-      {/* COMPLAINTS LIST */}
       <div className="max-w-3xl">
         <h2 className="text-lg font-semibold mb-4">
           All Complaints
-          <span className="text-gray-400 font-normal text-sm ml-2">
-            ({complaints.length} total)
-          </span>
+          <span className="text-gray-400 font-normal text-sm ml-2">({complaints.length} total)</span>
         </h2>
 
         {complaints.length === 0 ? (
@@ -145,15 +141,11 @@ export default function ComplaintsPage() {
                       {c.status.toUpperCase()}
                     </span>
                   </div>
-                  <span className="text-gray-500 text-xs">
-                    {new Date(c.created_at).toLocaleDateString()}
-                  </span>
+                  <span className="text-gray-500 text-xs">{new Date(c.created_at).toLocaleDateString()}</span>
                 </div>
                 <p className="text-gray-300 mt-2 text-sm">{c.description}</p>
                 {c.latitude && (
-                  <p className="text-gray-500 text-xs mt-1">
-                    📍 {c.latitude}, {c.longitude}
-                  </p>
+                  <p className="text-gray-500 text-xs mt-1">📍 {c.latitude}, {c.longitude}</p>
                 )}
               </div>
             ))}

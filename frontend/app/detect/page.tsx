@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import axios from 'axios'
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 interface Detection {
   bbox: number[]
   confidence: number
@@ -62,13 +64,11 @@ export default function DetectPage() {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      const res = await axios.post(
-        'http://localhost:8000/api/detect/',
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      )
+      const res = await axios.post(`${API}/api/detect/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
       setResult(res.data)
-    } catch (e: any) {
+    } catch (e) {
       setError('Detection failed. Make sure backend is running.')
     }
     setLoading(false)
@@ -80,20 +80,13 @@ export default function DetectPage() {
       <p className="text-gray-400 mb-8">Upload a road image to detect potholes using AI</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl">
-
-        {/* LEFT — Upload */}
         <div>
           <div className="bg-gray-800 rounded-2xl p-6 mb-4">
             <h2 className="text-lg font-semibold mb-4">Upload Road Image</h2>
-
             <label className="block w-full cursor-pointer">
               <div className="border-2 border-dashed border-gray-600 hover:border-blue-500 rounded-xl p-8 text-center transition">
                 {preview ? (
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="max-h-64 mx-auto rounded-lg object-contain"
-                  />
+                  <img src={preview} alt="Preview" className="max-h-64 mx-auto rounded-lg object-contain" />
                 ) : (
                   <div>
                     <p className="text-4xl mb-3">🛣️</p>
@@ -102,19 +95,9 @@ export default function DetectPage() {
                   </div>
                 )}
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
+              <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
             </label>
-
-            {file && (
-              <p className="text-gray-400 text-sm mt-2 text-center">
-                📎 {file.name}
-              </p>
-            )}
+            {file && <p className="text-gray-400 text-sm mt-2 text-center">📎 {file.name}</p>}
           </div>
 
           <button
@@ -125,18 +108,13 @@ export default function DetectPage() {
             {loading ? '🔍 Analyzing...' : '🚀 Detect Potholes'}
           </button>
 
-          {error && (
-            <p className="text-red-400 text-sm mt-3 text-center">{error}</p>
-          )}
+          {error && <p className="text-red-400 text-sm mt-3 text-center">{error}</p>}
         </div>
 
-        {/* RIGHT — Results */}
         <div>
           {!result && !loading && (
             <div className="bg-gray-800 rounded-2xl p-6 h-full flex items-center justify-center">
-              <p className="text-gray-500 text-center">
-                Upload an image and click Detect to see results
-              </p>
+              <p className="text-gray-500 text-center">Upload an image and click Detect to see results</p>
             </div>
           )}
 
@@ -151,8 +129,6 @@ export default function DetectPage() {
 
           {result && (
             <div className="flex flex-col gap-4">
-
-              {/* Severity Card */}
               <div className={`rounded-2xl p-6 ${severityBg[result.severity.level]}`}>
                 <div className="flex justify-between items-start">
                   <div>
@@ -163,68 +139,47 @@ export default function DetectPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-gray-400 text-sm">Score</p>
-                    <p className="text-2xl font-bold text-white">
-                      {(result.severity.score * 100).toFixed(0)}%
-                    </p>
+                    <p className="text-2xl font-bold text-white">{(result.severity.score * 100).toFixed(0)}%</p>
                   </div>
                 </div>
                 <div className="mt-3">
                   <div className="bg-gray-700 rounded-full h-2">
-                    <div
-                      className="bg-blue-500 h-2 rounded-full transition-all"
-                      style={{ width: `${result.severity.score * 100}%` }}
-                    />
+                    <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${result.severity.score * 100}%` }} />
                   </div>
                 </div>
                 <p className="text-gray-300 text-sm mt-3">
-                  🔧 Action: <span className="font-semibold">
-                    {result.severity.priority.replace(/_/g, ' ').toUpperCase()}
-                  </span>
+                  🔧 Action: <span className="font-semibold">{result.severity.priority.replace(/_/g, ' ').toUpperCase()}</span>
                 </p>
               </div>
 
-              {/* Stats */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-800 rounded-xl p-4 text-center">
-                  <p className="text-3xl font-bold text-blue-400">
-                    {result.total_detected}
-                  </p>
+                  <p className="text-3xl font-bold text-blue-400">{result.total_detected}</p>
                   <p className="text-gray-400 text-sm mt-1">Potholes Found</p>
                 </div>
                 <div className="bg-gray-800 rounded-xl p-4 text-center">
                   <p className="text-3xl font-bold text-green-400">
-                    {result.detections.length > 0
-                      ? `${(result.detections[0].confidence * 100).toFixed(0)}%`
-                      : 'N/A'}
+                    {result.detections.length > 0 ? `${(result.detections[0].confidence * 100).toFixed(0)}%` : 'N/A'}
                   </p>
                   <p className="text-gray-400 text-sm mt-1">Confidence</p>
                 </div>
               </div>
 
-              {/* Detections List */}
               {result.detections.length > 0 && (
                 <div className="bg-gray-800 rounded-2xl p-4">
-                  <h3 className="text-sm font-semibold text-gray-400 mb-3">
-                    DETECTED REGIONS
-                  </h3>
+                  <h3 className="text-sm font-semibold text-gray-400 mb-3">DETECTED REGIONS</h3>
                   {result.detections.map((det, i) => (
                     <div key={i} className="flex justify-between items-center py-2 border-b border-gray-700 last:border-0">
-                      <span className="text-sm text-gray-300">
-                        Pothole #{i + 1}
-                      </span>
-                      <span className="text-sm font-semibold text-green-400">
-                        {(det.confidence * 100).toFixed(1)}% confident
-                      </span>
+                      <span className="text-sm text-gray-300">Pothole #{i + 1}</span>
+                      <span className="text-sm font-semibold text-green-400">{(det.confidence * 100).toFixed(1)}% confident</span>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Message */}
               <div className="bg-gray-800 rounded-xl p-4">
                 <p className="text-gray-300 text-sm">💡 {result.message}</p>
               </div>
-
             </div>
           )}
         </div>

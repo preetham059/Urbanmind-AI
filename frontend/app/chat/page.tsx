@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import axios from 'axios'
+
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -42,7 +43,7 @@ export default function ChatPage() {
     setMessages(prev => [...prev, assistantMsg])
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat/', {
+      const response = await fetch(`${API}/api/chat/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -92,22 +93,16 @@ export default function ChatPage() {
 
   return (
     <main className="min-h-screen bg-gray-950 text-white flex flex-col" style={{ height: '100vh' }}>
-      {/* Header */}
       <div className="bg-gray-900 border-b border-gray-800 p-6">
         <h1 className="text-2xl font-bold text-blue-400">Ask the City</h1>
-        <p className="text-gray-400 text-sm mt-1">
-          AI assistant with real-time city data
-        </p>
+        <p className="text-gray-400 text-sm mt-1">AI assistant with real-time city data</p>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4 max-w-4xl w-full mx-auto">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-2xl rounded-2xl px-5 py-3 ${
-              msg.role === 'user'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-800 text-gray-100'
+              msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-100'
             }`}>
               {msg.role === 'assistant' && (
                 <p className="text-blue-400 text-xs font-semibold mb-1">UrbanMind AI</p>
@@ -124,7 +119,6 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Suggestions */}
       {messages.length <= 1 && (
         <div className="px-6 pb-4 max-w-4xl w-full mx-auto">
           <p className="text-gray-500 text-xs mb-2">Try asking:</p>
@@ -142,7 +136,6 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* Input */}
       <div className="border-t border-gray-800 p-4 max-w-4xl w-full mx-auto">
         <div className="flex gap-3">
           <input
